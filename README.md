@@ -33,13 +33,16 @@ func (j *job) Handle() (interface{}, error) {
 }
 
 func main() {
-	pool := gopool.NewPool(100, 4).WithExitCallback(func(reason string) {
-		fmt.Println("pool exit because", reason)
-	}).WithPanicCallback(func(r interface{}) {
-		fmt.Println("panic", r)
-	}).WithEventCallback(gopool.EventLevelDebug, func(event *gopool.Event) {
-		fmt.Println(event)
-	})
+	pool := gopool.NewPool(100, 4).
+		WithExitCallback(func(reason string) {
+			fmt.Println("pool exit because", reason)
+		}).
+		WithPanicCallback(func(r interface{}) {
+			fmt.Println("panic", r)
+		}).
+		WithEventCallback(gopool.EventLevelDebug, func(event *gopool.Event) {
+			fmt.Println(event)
+		})
 
 	for i := 0; i < 10; i++ {
 		pool.AddJob(gopool.NewJob("job", &job{Name: fmt.Sprintf("job-%d", i)}))
@@ -48,6 +51,7 @@ func main() {
 	pool.Close("finish")
 
 }
+
 ```
 
 ## use with pipeline
