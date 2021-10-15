@@ -160,7 +160,8 @@ func (p *Pool) waitAllJobFinish() {
 		runningJobs := p.RunningJobs()
 		penddingJobs := p.PenddingJobs()
 		p.sendEvent(EventLevelInfo,
-			fmt.Sprintf("wait all job finish, running=%d, pendding=%d", runningJobs, penddingJobs))
+			fmt.Sprintf("wait all job finish, running=%d, pendding=%d",
+				runningJobs, penddingJobs))
 		if runningJobs == 0 && penddingJobs == 0 {
 			return
 		}
@@ -196,7 +197,8 @@ func (p *Pool) getStatus() int {
 func (p *Pool) increaseWorker() {
 	workerNum := atomic.AddUint64(&p.workers, 1)
 	p.sendEvent(EventLevelInfo,
-		fmt.Sprintf("worker '%d' started, workers=%d", workerNum, p.Workers()))
+		fmt.Sprintf("worker '%d' started, workers=%d",
+			workerNum, p.Workers()))
 	go p.startWorker(workerNum)
 }
 
@@ -204,19 +206,22 @@ func (p *Pool) increaseWorker() {
 func (p *Pool) decreaseWorker(workerNum uint64) {
 	workers := atomic.AddUint64(&p.workers, ^uint64(0))
 	p.sendEvent(EventLevelDebug,
-		fmt.Sprintf("worker '%d' exited, workers=%d", workerNum, workers))
+		fmt.Sprintf("worker '%d' exited, workers=%d",
+			workerNum, workers))
 }
 
 func (p *Pool) increaseRunner(job *Job) {
 	runners := atomic.AddUint64(&p.runners, 1)
 	p.sendEvent(EventLevelDebug,
-		fmt.Sprintf("job '%s' start, running=%d, pendding=%d", job, runners, p.PenddingJobs()))
+		fmt.Sprintf("job '%s' start, running=%d, pendding=%d, workers=%d",
+			job, runners, p.PenddingJobs(), p.Workers()))
 }
 
 func (p *Pool) decreaseRunner(job *Job) {
 	runners := atomic.AddUint64(&p.runners, ^uint64(0))
 	p.sendEvent(EventLevelDebug,
-		fmt.Sprintf("job '%s' finish, runing=%d, pendding=%d", job, runners, p.PenddingJobs()))
+		fmt.Sprintf("job '%s' finish, runing=%d, pendding=%d, workers=%d",
+			job, runners, p.PenddingJobs(), p.Workers()))
 }
 
 func (p *Pool) startWorker(workerNum uint64) {
@@ -228,7 +233,8 @@ func (p *Pool) startWorker(workerNum uint64) {
 	defer func() {
 		if r := recover(); r != nil {
 			p.sendEvent(EventLevelError,
-				fmt.Sprintf("worker '%d' execute job '%s' panic", workerNum, currentJob))
+				fmt.Sprintf("worker '%d' execute job '%s' panic",
+					workerNum, currentJob))
 			p.decreaseRunner(currentJob)
 			p.decreaseWorker(workerNum)
 			p.increaseWorker()
