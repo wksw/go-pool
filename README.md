@@ -122,7 +122,7 @@ func main() {
 			}
 		}
 		return true
-	}).After(jobA, jobB, jobD); err != nil {
+	}).After(jobA, jobB); err != nil {
 		log.Fatal("A, B->C ", err.Error())
 	}
 
