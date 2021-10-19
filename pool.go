@@ -106,6 +106,7 @@ func (p *Pool) AddJob(jobs ...*Job) error {
 		return ErrPoolExit
 	}
 	for _, job := range jobs {
+		p.sendEvent(EventLevelDebug, fmt.Sprintf("add job '%s' into queue", job.Name))
 		p.jobs <- job
 	}
 	return nil
@@ -257,25 +258,17 @@ func (p *Pool) startWorker(workerNum uint64) {
 				p.decreaseWorker(workerNum)
 				return
 			}
+			if job.GetStatus() == JobCancled {
+				continue
+			}
 			currentJob = job
 			p.increaseRunner(job)
 
-			p.m.Lock()
 			job.setStatus(JobRunning)
-			p.m.Unlock()
-
-			result, err := job.handler.Handle()
-			p.m.Lock()
-			if err != nil {
-				job.setStatus(JobFail)
-			} else {
-				job.setStatus(JobSuccess)
-			}
-			job.setResult(result, err)
-			p.m.Unlock()
+			job.setResult(job.handler.Handle())
+			p.decreaseRunner(job)
 
 			p.AddJob(job.getNextExecuteJobs()...)
-			p.decreaseRunner(job)
 
 			if p.Workers() < p.maxActive && p.PenddingJobs() > int(p.capacity/2) {
 				p.increaseWorker()

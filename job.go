@@ -14,6 +14,8 @@ const (
 	JobSuccess
 	// JobFail job status is fail
 	JobFail
+	// JobCancled jobs status is cancled
+	JobCancled
 )
 
 // JobHandler job need implement methods
@@ -152,6 +154,11 @@ func (j *Job) setResult(result interface{}, err error) {
 	defer j.m.Unlock()
 	j.result = result
 	j.err = err
+	if err != nil {
+		j.status = JobFail
+	} else {
+		j.status = JobSuccess
+	}
 }
 
 func (j *Job) setStatus(status int) {

@@ -7,8 +7,9 @@ import (
 
 // Pipeline pipeline define
 type Pipeline struct {
-	Name string
-	Jobs []*Job
+	Name       string
+	Jobs       []*Job
+	UniqueJobs []*Job
 }
 
 // NewPipeline get a new pipeline
@@ -17,14 +18,27 @@ func NewPipeline(name string, jobs ...*Job) (*Pipeline, error) {
 		Name: name,
 		Jobs: jobs,
 	}
-	topJobs, err := pipeline.getTopJobs()
+
+	return pipeline.new()
+}
+
+// Cancle cancle jobs to execute
+func (p *Pipeline) Cancle() {
+	for _, job := range p.UniqueJobs {
+		job.setStatus(JobCancled)
+	}
+}
+
+func (p *Pipeline) new() (*Pipeline, error) {
+	topJobs, err := p.getTopJobs()
 	if err != nil {
 		return &Pipeline{}, err
 	}
-	if err := pipeline.isCycleAdded(topJobs); err != nil {
+	if err := p.isCycleAdded(topJobs); err != nil {
 		return &Pipeline{}, err
 	}
-	return pipeline, nil
+	p.setUniqueJobs(topJobs)
+	return p, nil
 }
 
 // isCycleAdded whether cycle added
@@ -76,4 +90,24 @@ func (p *Pipeline) getTopJobs() ([]*Job, error) {
 		return topJobs, errors.New("no top jobs")
 	}
 	return topJobs, nil
+}
+
+func (p *Pipeline) setUniqueJobs(jobs []*Job) {
+	var (
+		uniqueMap  = make(map[*Job]bool)
+		uniqueFunc func(job *Job)
+	)
+
+	uniqueFunc = func(job *Job) {
+		if _, ok := uniqueMap[job]; !ok {
+			uniqueMap[job] = true
+			p.UniqueJobs = append(p.UniqueJobs, job)
+		}
+		for _, jb := range job.childrens {
+			uniqueFunc(jb)
+		}
+	}
+	for _, job := range jobs {
+		uniqueFunc(job)
+	}
 }

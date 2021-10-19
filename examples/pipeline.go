@@ -41,29 +41,29 @@ var _ gopool.JobHandler = &jobE{}
 
 func (j *jobA) Handle() (interface{}, error) {
 	time.Sleep(j.A)
-	fmt.Println(j.Name, "花了", j.A.Seconds(), "秒")
+	fmt.Println(j.Name, "花了", j.A.Seconds(), "秒", time.Now().Unix())
 	return nil, nil
 }
 
 func (j *jobB) Handle() (interface{}, error) {
 	time.Sleep(time.Duration(j.B) * time.Second)
-	fmt.Println(j.Name, "花了", j.B, "秒")
+	fmt.Println(j.Name, "花了", j.B, "秒", time.Now().Unix())
 	return nil, nil
 }
 
 func (j *jobC) Handle() (interface{}, error) {
 	time.Sleep(time.Duration(j.C) * time.Second)
-	fmt.Println(" ", j.Name, "花了", j.C, "秒")
+	fmt.Println(j.Name, "花了", j.C, "秒", time.Now().Unix())
 	return nil, nil
 }
 
 func (j *jobD) Handle() (interface{}, error) {
-	fmt.Println(j.Name, j.D)
+	fmt.Println(j.Name, j.D, time.Now().Unix())
 	return nil, nil
 }
 
 func (j *jobE) Handle() (interface{}, error) {
-	fmt.Println(j.Name, j.E)
+	fmt.Println(j.Name, j.E, time.Now().Unix())
 	return nil, nil
 }
 
@@ -112,7 +112,7 @@ func main() {
 		log.Fatal("A, B, C, E->D ", err.Error())
 	}
 
-	pool := gopool.NewPool(3, 5).
+	pool := gopool.NewPool(10, 5).
 		WithEventCallback(gopool.EventLevelDebug, func(event *gopool.Event) {
 			// fmt.Println(event)
 		}).
@@ -137,6 +137,9 @@ func main() {
 	// 先起床， 然后同时洗脸刷牙，按刷牙最大耗时计算, 共 3+1=4秒
 	// 如果在4秒钟之前pool exit 则出不了门
 	// 否则没穿衣服就出门了
-	time.Sleep(4 * time.Second)
+
+	time.Sleep(2 * time.Second)
+	pipeline.Cancle()
+
 	pool.Close("没穿衣服")
 }
