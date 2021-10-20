@@ -25,15 +25,16 @@ type JobHandler interface {
 
 // Job job define
 type Job struct {
-	Name      string
-	handler   JobHandler
-	parents   []*Job
-	childrens []*Job
-	status    int
-	result    interface{}
-	err       error
-	when      func(self *Job) bool
-	m         sync.RWMutex
+	Name           string
+	handler        JobHandler
+	parents        []*Job
+	childrens      []*Job
+	status         int
+	result         interface{}
+	resultCallback func(interface{}, error)
+	err            error
+	when           func(self *Job) bool
+	m              sync.RWMutex
 }
 
 type jobs []*Job
@@ -58,6 +59,12 @@ func NewJob(name string, handler JobHandler) *Job {
 		handler: handler,
 		status:  JobPendding,
 	}
+}
+
+// WithResultCallback result callback function
+func (j *Job) WithResultCallback(handler func(interface{}, error)) *Job {
+	j.resultCallback = handler
+	return j
 }
 
 // When set when this job execute in pipeline
@@ -158,6 +165,9 @@ func (j *Job) setResult(result interface{}, err error) {
 		j.status = JobFail
 	} else {
 		j.status = JobSuccess
+	}
+	if j.resultCallback != nil {
+		j.resultCallback(result, err)
 	}
 }
 
