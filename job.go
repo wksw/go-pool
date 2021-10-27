@@ -144,6 +144,9 @@ func (j *Job) GetDownstreams() []*Job {
 
 func (j *Job) getNextExecuteJobs() []*Job {
 	var downStreams []*Job
+	if j.when != nil && !j.when(j) {
+		return []*Job{}
+	}
 	for _, job := range j.childrens {
 		if job.when != nil {
 			if job.when(job) {
