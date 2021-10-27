@@ -186,7 +186,8 @@ func (j *Job) cycleAddedCheck() error {
 	)
 	dfs = func(job *Job) {
 		visited[job] = 1
-		for _, children := range j.childrens {
+		result = append(result, job)
+		for _, children := range job.childrens {
 			if visited[children] == 0 {
 				dfs(children)
 			} else if visited[children] == 1 {
@@ -194,9 +195,8 @@ func (j *Job) cycleAddedCheck() error {
 				valid = false
 				return
 			}
-			visited[job] = 2
-			result = append(result, job)
 		}
+		visited[job] = 2
 	}
 	dfs(j)
 	if !valid {

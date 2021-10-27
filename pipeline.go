@@ -51,6 +51,7 @@ func (p *Pipeline) isCycleAdded(topJobs []*Job) error {
 	)
 	dfs = func(job *Job) {
 		visited[job] = 1
+		result = append(result, job)
 		for _, children := range job.childrens {
 			if visited[children] == 0 {
 				dfs(children)
@@ -61,7 +62,6 @@ func (p *Pipeline) isCycleAdded(topJobs []*Job) error {
 			}
 		}
 		visited[job] = 2
-		result = append(result, job)
 	}
 	for _, job := range topJobs {
 		if !valid {
