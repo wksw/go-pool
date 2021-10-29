@@ -237,8 +237,8 @@ func (p *Pool) startWorker(workerNum uint64) {
 	defer func() {
 		if r := recover(); r != nil {
 			p.sendEvent(EventLevelError,
-				fmt.Sprintf("worker '%d' execute job '%s' panic",
-					workerNum, currentJob))
+				fmt.Sprintf("worker '%d' execute job '%s' panic %v, stack: %s",
+					workerNum, currentJob, r, debug.Stack()))
 			p.decreaseRunner(currentJob)
 			p.decreaseWorker(workerNum)
 			currentJob.setResult(nil, fmt.Errorf("%s panic", currentJob.Name))
