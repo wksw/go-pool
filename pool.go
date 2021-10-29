@@ -265,7 +265,9 @@ func (p *Pool) startWorker(workerNum uint64) {
 			p.increaseRunner(job)
 
 			job.setStatus(JobRunning)
+
 			job.setResult(job.handler.Handle())
+
 			p.decreaseRunner(job)
 
 			p.AddJob(job.getNextExecuteJobs()...)

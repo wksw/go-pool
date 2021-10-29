@@ -111,3 +111,20 @@ func (p *Pipeline) setUniqueJobs(jobs []*Job) {
 		uniqueFunc(job)
 	}
 }
+
+// Graph return the graph of pipeline
+func (p *Pipeline) Graph() (string, error) {
+	topJobs, err := p.getTopJobs()
+	if err != nil {
+		return "", err
+	}
+	lines := ""
+	for _, job := range topJobs {
+		lines += job.Name
+		for _, children := range job.GetDownstreams() {
+			lines += fmt.Sprintf(" -> %s", children.Name)
+		}
+		lines += "\n"
+	}
+	return lines, nil
+}
