@@ -43,7 +43,7 @@ type Pool struct {
 	runners       uint64
 	jobs          chan *Job
 	exitCallback  func(reason string)
-	panicCallback func(r interface{}, stack []byte)
+	panicCallback func(r interface{})
 	eventCallback func(event *Event)
 	eventLevel    EventLevel
 	status        int
@@ -81,7 +81,7 @@ func (p *Pool) WithExitCallback(handle func(reason string)) *Pool {
 }
 
 // WithPanicCallback set goroutine panic callback function
-func (p *Pool) WithPanicCallback(handle func(r interface{}, stack []byte)) *Pool {
+func (p *Pool) WithPanicCallback(handle func(r interface{})) *Pool {
 	p.panicCallback = handle
 	return p
 }
@@ -244,7 +244,7 @@ func (p *Pool) startWorker(workerNum uint64) {
 			currentJob.setResult(nil, fmt.Errorf("%s panic", currentJob.Name))
 			p.increaseWorker()
 			if p.panicCallback != nil {
-				p.panicCallback(r, debug.Stack())
+				p.panicCallback(r)
 			}
 		}
 	}()
