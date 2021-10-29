@@ -120,11 +120,17 @@ func (p *Pipeline) Graph() (string, error) {
 	}
 	lines := ""
 	for _, job := range topJobs {
-		lines += job.Name
-		for _, children := range job.GetDownstreams() {
-			lines += fmt.Sprintf(" -> %s", children.Name)
-		}
-		lines += "\n"
+		lines += fmt.Sprintf("%s\n", p.graph(job))
 	}
 	return lines, nil
+}
+
+func (p *Pipeline) graph(job *Job) string {
+	lines := job.Name
+	if len(job.GetDownstreams()) != 0 {
+		for _, children := range job.GetDownstreams() {
+			lines += fmt.Sprintf(" -> %s", p.graph(children))
+		}
+	}
+	return lines
 }
