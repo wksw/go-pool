@@ -39,6 +39,16 @@ func (e *Event) Handle() (interface{}, error) {
 	return nil, nil
 }
 
+// Level get event level
+func (e *Event) Level() EventLevel {
+	return e.level
+}
+
+// Message get event message
+func (e *Event) Message() string {
+	return e.msg
+}
+
 func (e *Event) String() string {
 	level := "[INFO] "
 
