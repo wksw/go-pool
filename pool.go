@@ -241,7 +241,7 @@ func (p *Pool) startWorker(workerNum uint64) {
 					workerNum, currentJob))
 			p.decreaseRunner(currentJob)
 			p.decreaseWorker(workerNum)
-			currentJob.setResult(nil, ErrPoolPanic)
+			currentJob.setResult(nil, fmt.Errorf("%s panic", currentJob.Name))
 			p.increaseWorker()
 			if p.panicCallback != nil {
 				p.panicCallback(r, debug.Stack())
