@@ -285,7 +285,7 @@ func (p *Pool) startWorker(workerNum uint64) {
 
 func (p *Pool) sendEvent(level EventLevel, msg string) {
 	if p.eventCallback != nil {
-		if p.eventLevel >= level {
+		if level >= p.eventLevel {
 			p.eventCallback(&Event{level: level, msg: msg})
 		}
 	}
