@@ -264,9 +264,13 @@ func (p *Pool) startWorker(workerNum uint64) {
 			currentJob = job
 			p.increaseRunner(job)
 
+			p.m.Lock()
 			job.setStatus(JobRunning)
+			p.m.Unlock()
 
+			p.m.Lock()
 			job.setResult(job.handler.Handle())
+			p.m.Unlock()
 
 			p.decreaseRunner(job)
 
