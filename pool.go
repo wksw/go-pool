@@ -274,7 +274,12 @@ func (p *Pool) startWorker(workerNum uint64) {
 
 			p.decreaseRunner(job)
 
-			p.AddJob(job.getNextExecuteJobs()...)
+			nextJobs := job.getNextExecuteJobs()
+			if err := p.AddJob(nextJobs...); err != nil {
+				p.sendEvent(EventLevelError,
+					fmt.Sprintf("add next jobs %v fail[%s], running=%d, pendding=%d, workers=%d",
+						nextJobs, err.Error(), p.RunningJobs(), p.PenddingJobs(), p.Workers()))
+			}
 
 			if p.Workers() < p.maxActive && p.PenddingJobs() > int(p.capacity/2) {
 				p.increaseWorker()
