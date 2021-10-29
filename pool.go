@@ -275,6 +275,9 @@ func (p *Pool) startWorker(workerNum uint64) {
 			p.decreaseRunner(job)
 
 			nextJobs := job.getNextExecuteJobs()
+			p.sendEvent(EventLevelDebug,
+				fmt.Sprintf("add next jobs %v , running=%d, pendding=%d, workers=%d",
+					nextJobs, p.RunningJobs(), p.PenddingJobs(), p.Workers()))
 			if err := p.AddJob(nextJobs...); err != nil {
 				p.sendEvent(EventLevelError,
 					fmt.Sprintf("add next jobs %v fail[%s], running=%d, pendding=%d, workers=%d",
