@@ -35,3 +35,16 @@ func TestPoolPanic(t *testing.T) {
 	p.Close("finish")
 
 }
+
+func TestPoolResultCallback(t *testing.T) {
+	p := NewPool(10, 2).WithPanicCallback(func(r interface{}) {
+		t.Logf("%v", r)
+	}).WithEventCallback(EventLevelDebug, func(event *Event) {
+		t.Log(event)
+	})
+	p.AddJob(NewJob("resultCallback", &testJob{Name: "resultCallback"}).WithResultCallback(func(result interface{}, err error) {
+		t.Logf("%v %v", result, err)
+	}))
+
+	p.Close("finish")
+}
