@@ -22,3 +22,16 @@ func BenchmarkPoolJob(b *testing.B) {
 		}
 	}
 }
+
+func TestPoolPanic(t *testing.T) {
+	p := NewPool(10, 2).WithPanicCallback(func(r interface{}, stack []byte) {
+		t.Logf("%v %s", r, stack)
+	}).WithEventCallback(EventLevelError, func(event *Event) {
+		t.Log(event)
+	})
+
+	panicJob := NewJob("panicJob", &panicJob{})
+	p.AddJob(panicJob, NewJob("normal job", &testJob{Name: "testJob"}))
+	p.Close("finish")
+
+}

@@ -6,9 +6,16 @@ type testJob struct {
 	Name string
 }
 
+type panicJob struct{}
+
+func (j *panicJob) Handle() (interface{}, error) {
+	panic("panic job")
+}
+
 type testJob1 struct{}
 
 func (j *testJob) Handle() (interface{}, error) {
+
 	return nil, nil
 }
 

@@ -147,7 +147,7 @@ func (j *Job) getNextExecuteJobs() []*Job {
 	if j.when != nil && !j.when(j) {
 		return []*Job{}
 	}
-	for _, job := range j.childrens {
+	for _, job := range j.GetDownstreams() {
 		if job.when != nil {
 			if job.when(job) {
 				downStreams = append(downStreams, job)

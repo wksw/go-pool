@@ -3,6 +3,7 @@ package gopool
 import (
 	"errors"
 	"fmt"
+	"runtime/debug"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -27,6 +28,8 @@ const (
 var (
 	// ErrPoolExit pool exit error define
 	ErrPoolExit = errors.New("Pool exit")
+	// ErrPoolPanic run got panic
+	ErrPoolPanic = errors.New("panic")
 )
 
 // Pool job pool
@@ -40,7 +43,7 @@ type Pool struct {
 	runners       uint64
 	jobs          chan *Job
 	exitCallback  func(reason string)
-	panicCallback func(r interface{})
+	panicCallback func(r interface{}, stack []byte)
 	eventCallback func(event *Event)
 	eventLevel    EventLevel
 	status        int
@@ -78,7 +81,7 @@ func (p *Pool) WithExitCallback(handle func(reason string)) *Pool {
 }
 
 // WithPanicCallback set goroutine panic callback function
-func (p *Pool) WithPanicCallback(handle func(r interface{})) *Pool {
+func (p *Pool) WithPanicCallback(handle func(r interface{}, stack []byte)) *Pool {
 	p.panicCallback = handle
 	return p
 }
@@ -238,9 +241,10 @@ func (p *Pool) startWorker(workerNum uint64) {
 					workerNum, currentJob))
 			p.decreaseRunner(currentJob)
 			p.decreaseWorker(workerNum)
+			currentJob.setResult(nil, ErrPoolPanic)
 			p.increaseWorker()
 			if p.panicCallback != nil {
-				p.panicCallback(r)
+				p.panicCallback(r, debug.Stack())
 			}
 		}
 	}()
@@ -264,13 +268,9 @@ func (p *Pool) startWorker(workerNum uint64) {
 			currentJob = job
 			p.increaseRunner(job)
 
-			p.m.Lock()
 			job.setStatus(JobRunning)
-			p.m.Unlock()
 
-			p.m.Lock()
 			job.setResult(job.handler.Handle())
-			p.m.Unlock()
 
 			p.decreaseRunner(job)
 
