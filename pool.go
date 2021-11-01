@@ -110,7 +110,9 @@ func (p *Pool) AddJob(jobs ...*Job) error {
 	}
 	for _, job := range jobs {
 		p.sendEvent(EventLevelDebug, fmt.Sprintf("add job '%s' into queue", job.Name))
-		p.jobs <- job
+		if job.setTrigged() {
+			p.jobs <- job
+		}
 	}
 	return nil
 }

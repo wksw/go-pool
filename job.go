@@ -35,6 +35,9 @@ type Job struct {
 	err            error
 	when           func(self *Job) bool
 	m              sync.RWMutex
+	// whether is trigged
+	trigged bool
+	once    bool
 }
 
 type jobs []*Job
@@ -67,10 +70,40 @@ func (j *Job) WithResultCallback(handler func(interface{}, error)) *Job {
 	return j
 }
 
+// WithOnce trigger one time
+func (j *Job) WithOnce() *Job {
+	j.once = true
+	return j
+}
+
 // When set when this job execute in pipeline
 func (j *Job) When(handle func(self *Job) bool) *Job {
 	j.when = handle
 	return j
+}
+
+// IsOnece is one time trigger
+func (j *Job) isOnce() bool {
+	j.m.Lock()
+	defer j.m.Unlock()
+	return j.once
+}
+
+// IsTrigged is job already trigged
+func (j *Job) isTrigged() bool {
+	j.m.Lock()
+	defer j.m.Unlock()
+	return j.trigged
+}
+
+func (j *Job) setTrigged() bool {
+	j.m.Lock()
+	defer j.m.Unlock()
+	if j.once && j.trigged {
+		return false
+	}
+	j.trigged = true
+	return true
 }
 
 // After execute after other jobs
