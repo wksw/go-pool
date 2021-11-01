@@ -82,15 +82,15 @@ func (j *Job) When(handle func(self *Job) bool) *Job {
 	return j
 }
 
-// IsOnece is one time trigger
-func (j *Job) isOnce() bool {
+// IsOnce is one time trigger
+func (j *Job) IsOnce() bool {
 	j.m.Lock()
 	defer j.m.Unlock()
 	return j.once
 }
 
 // IsTrigged is job already trigged
-func (j *Job) isTrigged() bool {
+func (j *Job) IsTrigged() bool {
 	j.m.Lock()
 	defer j.m.Unlock()
 	return j.trigged
